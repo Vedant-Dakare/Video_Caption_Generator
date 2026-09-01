@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Generated media (keep the source example video out of git artifacts too)
+videos/*.mp4
+audios/*.wav
+captions/*.srt
+outputs/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Env / tooling
+.env
+.env.local
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
