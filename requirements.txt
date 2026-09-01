@@ -1,0 +1,14 @@
+
+flask>=3.1
+flask-cors>=6.0
+
+openai-whisper
+moviepy
+srt
+
+torch
+numpy
+numba
+
+deep-translator
+requests
