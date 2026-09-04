@@ -14,7 +14,7 @@ export default function PreviewModal({ src, title, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 sm:p-8 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -27,20 +27,21 @@ export default function PreviewModal({ src, title, onClose }) {
         {/* Close button */}
         <button
           type="button"
-          className="absolute -top-12 right-0 sm:top-0 sm:-right-12 z-10 grid h-10 w-10 place-items-center rounded-xl bg-white/[0.08] text-slate-400 transition-all duration-200 hover:bg-white/[0.15] hover:text-white backdrop-blur-sm border border-white/[0.06]"
+          className="absolute -top-12 right-0 sm:top-0 sm:-right-12 z-10 grid h-9 w-9 place-items-center rounded-sm bg-surface-1 text-warm-300 border border-warm-700 transition-all duration-200 hover:bg-surface-3 hover:text-warm-100"
           onClick={onClose}
           aria-label="Close preview"
         >
-          <CloseIcon className="h-5 w-5" />
+          <CloseIcon className="h-4 w-4" />
         </button>
 
-        {/* Title */}
-        <div className="mb-3 flex items-center gap-2 px-1">
-          <span className="truncate text-sm font-medium text-slate-300">{title}</span>
+        {/* Title / timecode bar */}
+        <div className="mb-2.5 flex items-center justify-between px-1">
+          <span className="truncate text-xs font-mono text-warm-300">{title}</span>
+          <span className="mono-label text-warm-500">PREVIEW</span>
         </div>
 
-        {/* Video */}
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-black">
+        {/* Video frame */}
+        <figure className="overflow-hidden border border-warm-700 bg-black">
           <video
             src={src}
             controls
@@ -48,7 +49,7 @@ export default function PreviewModal({ src, title, onClose }) {
             playsInline
             className="aspect-video w-full object-contain"
           />
-        </div>
+        </figure>
       </div>
     </div>
   );

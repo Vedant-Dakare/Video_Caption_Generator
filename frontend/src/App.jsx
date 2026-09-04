@@ -8,7 +8,7 @@ import {
   getLanguages,
 } from "./services/api.js";
 
-const DEFAULT_LANGS = ["en", "hi", "mr"];
+const DEFAULT_LANGS = ["en"];
 const POLL_MS = 1500;
 
 export default function App() {
@@ -169,6 +169,8 @@ export default function App() {
   const handleToggleLang = useCallback(
     (code) => {
       setSelectedLangs((prev) => {
+        // Never allow zero subtitle languages — keep at least one selected.
+        if (prev.includes(code) && prev.length === 1) return prev;
         const next = prev.includes(code)
           ? prev.filter((c) => c !== code)
           : [...prev, code];
@@ -206,7 +208,7 @@ export default function App() {
   useEffect(() => () => stopPolling(), [stopPolling]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-surface-0">
       <Navbar status={backendStatus} />
       <Home
         phase={phase}
@@ -235,10 +237,19 @@ export default function App() {
           checkBackend();
         }}
       />
-      <footer className="border-t border-white/[0.04] py-8 text-center">
-        <p className="text-xs text-slate-600">
-          Lumina Captions · Whisper transcription · FFmpeg rendering · Runs locally & free
-        </p>
+      <footer className="relative border-t border-warm-700/50 bg-surface-0 py-8">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-display text-sm font-semibold text-warm-300">Lumina Captions</span>
+              <span className="text-warm-600">|</span>
+              <span className="text-xs text-warm-400">Powered by Whisper + FFmpeg</span>
+            </div>
+            <p className="text-[11px] text-warm-500 font-mono">
+              Runs locally. No data collection.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

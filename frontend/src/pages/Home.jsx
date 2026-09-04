@@ -5,59 +5,30 @@ import SubtitleOptions from "../components/SubtitleOptions.jsx";
 import ProcessingStatus from "../components/ProcessingStatus.jsx";
 import ResultCard from "../components/ResultCard.jsx";
 import PreviewModal from "../components/PreviewModal.jsx";
-import { Spinner, WandIcon } from "../components/icons.jsx";
+import { Spinner } from "../components/icons.jsx";
+import { FilmIcon, SubtitleIcon, GlobeIcon, ScissorsIcon, LayersIcon } from "../components/icons.jsx";
 
-function HeroBackground() {
+function WorkflowRow() {
+  const steps = [
+    { icon: FilmIcon, label: "VIDEO" },
+    { icon: ScissorsIcon, label: "AUDIO" },
+    { icon: GlobeIcon, label: "TRANSCRIBE" },
+    { icon: SubtitleIcon, label: "TRANSLATE" },
+    { icon: LayersIcon, label: "RENDER" },
+  ];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {/* Gradient orbs */}
-      <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-accent-500/[0.07] blur-[120px]" />
-      <div className="absolute -right-32 top-0 h-[400px] w-[400px] rounded-full bg-accent-600/[0.05] blur-[100px]" />
-      <div className="absolute bottom-0 left-1/2 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-accent-400/[0.03] blur-[80px]" />
-
-      {/* Subtle grid */}
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)
-          `,
-          backgroundSize: "64px 64px",
-        }}
-      />
-
-      {/* Horizontal lines — film/timeline inspired */}
-      <div className="absolute left-0 right-0 top-1/3 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-      <div className="absolute left-0 right-0 top-2/3 h-px bg-gradient-to-r from-transparent via-white/[0.03] to-transparent" />
-    </div>
-  );
-}
-
-function StepIndicator({ number, label, active, completed }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div
-        className={`
-          grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-bold font-mono
-          transition-all duration-300
-          ${completed
-            ? "bg-mint/15 text-mint border border-mint/20"
-            : active
-            ? "bg-accent-500/15 text-accent-400 border border-accent-500/20"
-            : "bg-white/[0.04] text-slate-600 border border-white/[0.06]"
-          }
-        `}
-      >
-        {completed ? "✓" : number}
-      </div>
-      <span
-        className={`text-sm transition-colors duration-300 ${
-          active ? "text-white font-medium" : completed ? "text-slate-300" : "text-slate-600"
-        }`}
-      >
-        {label}
-      </span>
+    <div className="hidden lg:flex items-center gap-2 mt-8">
+      {steps.map((s, i) => (
+        <div key={s.label} className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 border border-warm-700 rounded-md px-2.5 py-1.5 bg-surface-1">
+            <s.icon className="h-3 w-3 text-warm-400" />
+            <span className="font-mono text-[9px] tracking-wider text-warm-400">{s.label}</span>
+          </div>
+          {i < steps.length - 1 && (
+            <span className="h-px w-3 bg-warm-700" />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -97,7 +68,7 @@ export default function Home(props) {
 
   const generateLabel = useMemo(() => {
     if (!video) return "Upload a video first";
-    if (!video.filename) return "Uploading…";
+    if (!video.filename) return "Uploading...";
     if (selectedLangs.length === 0) return "Select at least one language";
     if (burnLang) {
       const name = languages.find((l) => l.code === burnLang)?.name || burnLang.toUpperCase();
@@ -115,34 +86,47 @@ export default function Home(props) {
   return (
     <main className="relative">
       {/* ================================================================ */}
-      {/*  HERO — Cinematic landing when no video is selected              */}
+      {/*  HERO — Editorial composition: identity left, workspace right    */}
       {/* ================================================================ */}
       {showHero && (
-        <section className="relative min-h-[calc(100vh-72px)] flex flex-col items-center justify-center px-5 py-16 sm:py-24">
-          <HeroBackground />
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1fr_1.1fr] items-center py-14 sm:py-20">
+            {/* LEFT: Product identity */}
+            <div className="space-y-7">
+              <div className="flex items-center gap-2 animate-fade-up">
+                <span className="mono-label text-accent">WHISPER / POST-PRODUCTION</span>
+              </div>
 
-          <div className="relative z-10 mx-auto max-w-3xl text-center">
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent-500/20 bg-accent-500/[0.08] px-4 py-1.5 text-xs font-medium text-accent-300 animate-fade-up">
-              <span className="h-1.5 w-1.5 rounded-full bg-mint animate-pulse-slow" />
-              Powered by Whisper AI
+              <h1 className="font-display text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-warm-100 animate-fade-up animate-delay-75">
+                Subtitle your video
+                <br />
+                <span className="text-accent">in every language.</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-warm-300 leading-relaxed max-w-md animate-fade-up animate-delay-150">
+                An AI transcription pipeline for video that detects the spoken language,
+                generates timecoded subtitles, translates them, and burns captions
+                directly into the file.
+              </p>
+
+              <div className="flex flex-wrap gap-x-8 gap-y-3 pt-2 animate-fade-up animate-delay-300">
+                {[
+                  { k: "SRT", v: "timecoded output" },
+                  { k: "20", v: "languages" },
+                  { k: "LOCAL", v: "runs on device" },
+                ].map((f) => (
+                  <div key={f.k} className="border-l border-warm-700 pl-3">
+                    <div className="font-mono text-sm font-semibold text-warm-100">{f.k}</div>
+                    <div className="text-xs text-warm-400">{f.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              <WorkflowRow />
             </div>
 
-            {/* Headline */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight text-white text-balance animate-fade-up animate-delay-75">
-              Every video speaks.{" "}
-              <span className="text-gradient">We translate.</span>
-            </h1>
-
-            {/* Sub-headline */}
-            <p className="mx-auto mt-5 max-w-lg text-base sm:text-lg text-slate-400 leading-relaxed animate-fade-up animate-delay-150">
-              Transcribe, translate, and caption your videos with AI.
-              <br className="hidden sm:block" />
-              Locally. Privately. For free.
-            </p>
-
-            {/* Upload zone */}
-            <div className="mt-10 sm:mt-12 animate-fade-up animate-delay-300 max-w-xl mx-auto">
+            {/* RIGHT: Upload workspace */}
+            <div className="animate-fade-up animate-delay-100">
               <VideoUploader
                 video={video}
                 onVideoChange={onVideoChange}
@@ -150,62 +134,77 @@ export default function Home(props) {
                 uploadProgress={uploadProgress}
               />
             </div>
-
-            {/* Format hint */}
-            <p className="mt-5 text-xs text-slate-600 animate-fade-up animate-delay-500">
-              MP4 · MOV · MKV · WEBM · AVI — up to 500 MB
-            </p>
           </div>
-        </section>
+        </div>
       )}
 
       {/* ================================================================ */}
       {/*  CONFIGURE — Video selected, configure subtitles                 */}
       {/* ================================================================ */}
       {showConfigure && (
-        <section className="mx-auto max-w-6xl px-5 py-8 sm:py-12 animate-fade-up">
-          {/* Compact progress steps */}
-          <div className="mb-8 flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
-            <StepIndicator number={1} label="Upload" completed />
-            <div className="h-px w-8 bg-white/[0.08] hidden sm:block" />
-            <StepIndicator number={2} label="Configure" active />
-            <div className="h-px w-8 bg-white/[0.08] hidden sm:block" />
-            <StepIndicator number={3} label="Generate" />
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16 animate-fade-up">
+          {/* Phase header row */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10 border-b border-warm-700/60 pb-6">
+            <div className="flex items-baseline gap-3">
+              <span className="font-mono text-xs text-accent">02 / CONFIGURE</span>
+              <h2 className="font-display text-2xl font-bold text-warm-100">Configure captions</h2>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="inline-flex items-center gap-2 text-warm-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-mint" />
+                Video ready
+              </span>
+              <button
+                type="button"
+                onClick={onReset}
+                className="text-warm-400 hover:text-warm-100 transition-colors mono-label underline underline-offset-4"
+              >
+                CHANGE VIDEO
+              </button>
+            </div>
           </div>
 
-          {/* Two-column layout */}
-          <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_1.1fr]">
-            {/* Left: Video preview */}
+          {/* Two-column grid */}
+          <div className="grid gap-10 lg:gap-14 lg:grid-cols-[1fr_1.25fr]">
+            {/* Left: Video preview / media */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <span className="step-number">1</span>
-                <h2 className="section-title">Your Video</h2>
-              </div>
               <VideoUploader
                 video={video}
                 onVideoChange={onVideoChange}
                 onUpload={onUploadFile}
                 uploadProgress={uploadProgress}
               />
+
+              {/* Capture preview note */}
+              <div className="border border-warm-700 rounded-md px-4 py-3 bg-surface-1">
+                <p className="mono-label mb-1">SOURCE</p>
+                <p className="text-sm text-warm-200 leading-relaxed">
+                  The transcript language below determines how speech is recognized.
+                  Subtitles are then generated from the transcript.
+                </p>
+              </div>
             </div>
 
             {/* Right: Configuration */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <span className="step-number">2</span>
-                <h2 className="section-title">Configure Subtitles</h2>
-              </div>
-
-              <div className="card p-5 sm:p-6 space-y-6">
+            <div className="space-y-6">
+              {/* Spoken language */}
+              <section className="border-b border-warm-700/60 pb-6">
+                <div className="flex items-baseline gap-3 mb-4">
+                  <span className="font-mono text-xs text-accent">STEP 01</span>
+                  <label className="font-display text-base font-semibold text-warm-100">
+                    Original language
+                  </label>
+                </div>
                 <LanguageSelector
                   languages={languages}
                   value={spokenLang}
                   onChange={onSpokenChange}
                   disabled={generating}
                 />
+              </section>
 
-                <div className="divider" />
-
+              {/* Subtitle languages + burn */}
+              <div>
                 <SubtitleOptions
                   languages={languages}
                   selected={selectedLangs}
@@ -214,109 +213,103 @@ export default function Home(props) {
                   onBurnChange={onBurnChange}
                   disabled={generating}
                 />
+              </div>
 
-                <div className="divider" />
-
-                {/* Generate CTA */}
+              {/* Generate */}
+              <div>
+                <div className="flex items-baseline gap-3 mb-3">
+                  <span className="font-mono text-xs text-accent">STEP 04</span>
+                  <label className="font-display text-base font-semibold text-warm-100">
+                    Generate
+                  </label>
+                </div>
                 <button
                   type="button"
-                  className="btn-primary w-full text-base"
+                  className="btn-primary w-full py-3 text-base"
                   disabled={!canGenerate}
                   onClick={onGenerate}
                 >
                   {generating ? (
                     <>
-                      <Spinner className="h-4 w-4" /> Processing…
+                      <Spinner className="h-4 w-4" />
+                      Processing...
                     </>
                   ) : (
-                    <>
-                      <WandIcon className="h-4 w-4" />
-                      {generateLabel}
-                    </>
+                    generateLabel
                   )}
                 </button>
               </div>
 
               {/* Error display */}
               {error && (
-                <div className="rounded-2xl border border-coral/15 bg-coral/[0.04] p-4 animate-fade-up">
-                  <div className="flex items-start gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-coral/10 text-coral">
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-coral mb-1">Something went wrong</p>
-                      <p className="text-xs text-slate-400">{error}</p>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-sm text-coral hover:text-coral hover:bg-coral/10 hover:border-coral/20 shrink-0"
-                      onClick={onHealthRetry}
-                    >
-                      Retry
-                    </button>
+                <div className="flex items-start gap-3 rounded-md border border-coral/30 bg-coral/[0.06] px-4 py-3 animate-fade-up">
+                  <span className="text-coral-light mt-0.5">!</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-coral-light mb-0.5">Something went wrong</p>
+                    <p className="text-xs text-warm-400">{error}</p>
                   </div>
+                  <button
+                    type="button"
+                    className="btn-sm text-coral-light hover:text-coral-light shrink-0"
+                    onClick={onHealthRetry}
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
             </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* ================================================================ */}
       {/*  LOADING — Language catalogue loading                             */}
       {/* ================================================================ */}
       {showHero && languagesLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-0/80 backdrop-blur-sm">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-surface-2 px-6 py-4 text-sm text-slate-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-0/90">
+          <div className="flex items-center gap-3 rounded-md border border-warm-700 bg-surface-2 px-5 py-3 text-sm text-warm-300">
             <Spinner className="h-4 w-4" />
-            Loading languages…
+            Loading languages...
           </div>
         </div>
       )}
 
       {/* ================================================================ */}
-      {/*  PROCESSING — Cinematic processing visualization                  */}
+      {/*  PROCESSING                                                       */}
       {/* ================================================================ */}
       {showProcessing && (
-        <section className="mx-auto max-w-2xl px-5 py-8 sm:py-12">
+        <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16 animate-fade-up">
           <ProcessingStatus job={job} />
-        </section>
+        </div>
       )}
 
       {/* ================================================================ */}
-      {/*  ERROR — Global error state                                       */}
+      {/*  ERROR                                                            */}
       {/* ================================================================ */}
       {showError && (
-        <section className="mx-auto max-w-2xl px-5 py-8 sm:py-12 animate-fade-up">
-          <div className="card p-6 sm:p-8 text-center">
-            <div className="grid mx-auto h-14 w-14 place-items-center rounded-2xl bg-coral/10 text-coral mb-4">
-              <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+        <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16 animate-fade-up">
+          <div className="panel rounded-md p-8 sm:p-12 text-center">
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-coral/40 bg-coral/10">
+              <span className="text-lg font-semibold text-coral-light">!</span>
             </div>
-            <h2 className="font-display text-xl font-bold text-white mb-2">
+            <h2 className="font-display text-2xl font-bold text-warm-100 mb-3">
               Processing failed
             </h2>
-            <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto">
-              {error || "An unexpected error occurred while processing your video."}
+            <p className="text-sm text-warm-300 mb-8 max-w-md mx-auto leading-relaxed">
+              {error || "An unexpected error occurred while processing your video. Please check your file and try again."}
             </p>
-            <button type="button" className="btn-ghost" onClick={onReset}>
-              Try again
+            <button type="button" className="btn-primary" onClick={onReset}>
+              Try another video
             </button>
           </div>
-        </section>
+        </div>
       )}
 
       {/* ================================================================ */}
-      {/*  RESULTS — Generated outputs                                      */}
+      {/*  RESULT                                                           */}
       {/* ================================================================ */}
       {(showResult || showError) && job && (
-        <section className="mx-auto max-w-3xl px-5 pb-16">
+        <div className="mx-auto max-w-3xl px-5 pb-16">
           {!showError && (
             <ResultCard
               job={job}
@@ -325,7 +318,7 @@ export default function Home(props) {
               onOpenPreview={onOpenPreview}
             />
           )}
-        </section>
+        </div>
       )}
 
       {/* ================================================================ */}

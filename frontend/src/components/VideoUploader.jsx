@@ -1,29 +1,36 @@
-import { useEffect, useRef, useState } from "react";
-import { CloseIcon, UploadIcon, FileIcon } from "./icons.jsx";
+import { useRef, useState } from "react";
+import { UploadIcon, FileIcon, CloseIcon, PlayIcon } from "./icons.jsx";
 
 const ACCEPTED = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska", "video/webm"];
 const ACCEPTED_EXT = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"];
-const FORMAT_LABELS = ["MP4", "MOV", "AVI", "MKV", "WEBM"];
+const FORMAT_LABELS = ["MP4", "MOV", "AVI", "MKV", "WEBM", "M4V"];
 
 function sizeLabel(bytes) {
+  if (!bytes && bytes !== 0) return null;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
+function extOf(name) {
+  return (name?.slice(name.lastIndexOf(".")) || "").toUpperCase();
+}
+
 function validate(file) {
   const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
   if (!ACCEPTED_EXT.includes(ext)) {
-    return `"${ext}" is not supported. Try ${FORMAT_LABELS.join(", ")}.`;
+    return `Format not supported. Accepted: ${FORMAT_LABELS.join(", ")}`;
   }
   if (!ACCEPTED.includes(file.type) && file.type !== "") {
-    return `"${file.type}" is not a supported video type.`;
+    return `This video type isn't supported. Please try another format.`;
   }
   if (file.size > 500 * 1024 * 1024) {
-    return "File exceeds the 500 MB limit.";
+    return "Video must be under 500 MB.";
   }
   return null;
 }
+
+const FRAME_TICKS = Array.from({ length: 24 });
 
 export default function VideoUploader({ video, onVideoChange, onUpload, uploadProgress }) {
   const inputRef = useRef(null);
@@ -67,7 +74,9 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
     if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]);
   };
 
-  /* ---- Upload Zone (empty state) ---- */
+  const uploading = uploadProgress !== null && uploadProgress < 100;
+
+  /* ======================= EMPTY / DROP ZONE ======================= */
   if (!video) {
     return (
       <div>
@@ -82,146 +91,181 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
           onDragLeave={onDragLeave}
           onDrop={onDrop}
           className={`
-            group relative flex cursor-pointer flex-col items-center justify-center
-            gap-5 rounded-3xl border-2 border-dashed px-6 py-14 text-center
-            transition-all duration-300 ease-out-expo
+            relative cursor-pointer overflow-hidden
+            border transition-all duration-300
             ${dragOver
-              ? "border-accent-400 bg-accent-500/[0.08] scale-[1.01] shadow-glow-sm"
-              : "border-white/[0.08] bg-white/[0.015] hover:border-white/[0.15] hover:bg-white/[0.03]"
+              ? "border-accent/50 bg-surface-1"
+              : "border-warm-700 border-dashed bg-surface-1 hover:border-warm-600 hover:bg-surface-2"
             }
           `}
         >
-          {/* Ambient glow behind icon */}
-          <div className="absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-            <div className="absolute left-1/2 top-1/3 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-500/10 blur-3xl" />
+          {/* Top: timecode-style header */}
+          <div className="flex items-center justify-between border-b border-warm-700/60 px-5 py-2.5">
+            <span className="mono-label text-warm-400">SOURCE // NEW PROJECT</span>
+            <span className="mono-label text-warm-500">00:00:00:00</span>
           </div>
 
-          {/* Upload icon */}
-          <div className={`
-            relative grid h-16 w-16 place-items-center rounded-2xl
-            transition-all duration-300
-            ${dragOver
-              ? "bg-accent-500/20 text-accent-300 scale-110"
-              : "bg-white/[0.05] text-slate-400 group-hover:bg-accent-500/10 group-hover:text-accent-400"
-            }
-          `}>
-            <UploadIcon className="h-7 w-7" />
-          </div>
+          {/* Center body */}
+          <div className="px-8 py-14 text-center">
+            <div
+              className={`mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-md border transition-all duration-300 ${
+                dragOver
+                  ? "border-accent/40 bg-accent/5 text-accent"
+                  : "border-warm-700 bg-surface-2 text-warm-400"
+              }`}
+            >
+              <UploadIcon className="h-5 w-5" />
+            </div>
 
-          {/* Text */}
-          <div className="relative">
-            <p className="font-display text-lg font-semibold text-white">
-              {dragOver ? "Release to upload" : "Drop your video here"}
+            <p className={`font-display text-lg font-semibold text-warm-100 mb-1.5 transition-colors ${dragOver ? "text-accent" : ""}`}>
+              {dragOver ? "Release to drop" : "Drop a video here"}
             </p>
-            <p className="mt-1.5 text-sm text-slate-400">
+            <p className="text-sm text-warm-400 mb-6">
               or{" "}
-              <span className="font-medium text-accent-400 underline underline-offset-2 decoration-accent-400/30 group-hover:decoration-accent-400/60 transition-colors">
+              <span className="text-accent underline underline-offset-4 decoration-accent/40 font-medium">
                 browse files
               </span>
             </p>
-          </div>
 
-          {/* Format badges */}
-          <div className="relative flex flex-wrap items-center justify-center gap-1.5">
-            {FORMAT_LABELS.map((f) => (
-              <span
-                key={f}
-                className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-2 py-1 font-mono text-[10px] font-medium text-slate-500"
-              >
-                {f}
-              </span>
-            ))}
-            <span className="mx-1 text-slate-600">·</span>
-            <span className="text-[10px] text-slate-600">up to 500 MB</span>
+            {/* Format strip */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {FORMAT_LABELS.map((f) => (
+                <span
+                  key={f}
+                  className={`rounded-sm border px-2 py-1 font-mono text-[10px] font-semibold tracking-wide ${
+                    dragOver
+                      ? "border-accent/30 text-accent/80"
+                      : "border-warm-700 text-warm-400"
+                  }`}
+                >
+                  {f}
+                </span>
+              ))}
+            </div>
+            <p className="mono-label mt-4 text-warm-500">MAX 500 MB</p>
           </div>
-
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".mp4,.mov,.avi,.mkv,.webm,.m4v,video/*"
-            className="hidden"
-            aria-hidden="true"
-            onChange={(e) => {
-              handleFile(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
         </div>
 
-        {/* Error */}
+        {/* error */}
         {error && (
-          <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-coral/20 bg-coral/[0.06] px-4 py-3 text-sm text-coral animate-fade-up">
-            <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{error}</span>
+          <div className="mt-3 flex items-start gap-2.5 rounded-md border border-coral/30 bg-coral/[0.06] px-4 py-3 text-sm text-coral-light animate-fade-up">
+            <span className="mt-0.5">!</span>
+            <span className="leading-relaxed">{error}</span>
           </div>
         )}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".mp4,.mov,.avi,.mkv,.webm,.m4v,video/*"
+          className="hidden"
+          aria-hidden="true"
+          onChange={(e) => {
+            handleFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
       </div>
     );
   }
 
-  /* ---- Video Preview (file selected) ---- */
+  /* ======================= FILE SELECTED / PREVIEW ======================= */
+  const ext = extOf(video.name);
+
   return (
     <div className="animate-fade-up">
-      <div className="overflow-hidden rounded-3xl border border-white/[0.06] bg-surface-1">
-        {/* Video */}
-        <div className="relative bg-black/80">
-          <video
-            src={video.url}
-            controls
-            playsInline
-            className="aspect-video w-full object-contain"
-          />
-          {/* Subtle film-frame top/bottom lines */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
-        {/* Info bar */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3.5 bg-surface-2/50">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-500/10 text-accent-400">
-              <FileIcon className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">{video.name}</p>
-              <p className="text-xs text-slate-500 font-mono">
-                {sizeLabel(video.size)}
-                {video.duration && ` · ${video.duration}`}
-              </p>
-            </div>
+      {/* Media frame */}
+      <figure className="relative border border-warm-700 bg-black overflow-hidden">
+        {/* Top timecode bar */}
+        <div className="flex items-center justify-between border-b border-warm-700/60 bg-surface-1 px-4 py-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileIcon className="h-3.5 w-3.5 text-warm-400 shrink-0" />
+            <span className="truncate font-mono text-xs text-warm-200">{video.name}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="btn-sm"
-              onClick={() => inputRef.current?.click()}
-            >
-              Replace
-            </button>
-            <button
-              type="button"
-              aria-label="Remove video"
-              className="btn-sm text-coral hover:text-coral hover:bg-coral/10 hover:border-coral/20"
-              onClick={() => {
-                onVideoChange(null);
-                setError(null);
-              }}
-            >
-              <CloseIcon className="h-3.5 w-3.5" />
-            </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="mono-label text-warm-500">{ext || "MEDIA"}</span>
           </div>
         </div>
 
-        {/* Upload progress */}
-        {uploadProgress !== null && uploadProgress < 100 && (
-          <div className="h-0.5 w-full bg-white/[0.06]">
-            <div
-              className="h-full bg-gradient-to-r from-accent-500 to-accent-400 transition-all duration-300 ease-out"
-              style={{ width: `${uploadProgress}%` }}
+        {/* Video player */}
+        <div className="relative aspect-video bg-black">
+          {video.url ? (
+            <video
+              src={video.url}
+              controls
+              playsInline
+              className="h-full w-full object-contain"
             />
+          ) : (
+            <div className="flex h-full items-center justify-center text-warm-500">
+              <PlayIcon className="h-8 w-8" />
+            </div>
+          )}
+          {/* Frame markers overlay - subtle */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-3 items-end justify-between px-3 opacity-40" aria-hidden="true">
+            {FRAME_TICKS.map((_, i) => (
+              <span key={i} className="w-px bg-warm-100/20" style={{ height: i % 4 === 0 ? "100%" : "55%" }} />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* Bottom metadata strip */}
+        <div className="border-t border-warm-700/60 bg-surface-1 px-4 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-xs font-medium text-warm-200 truncate max-w-[180px] sm:max-w-none">
+                  {video.name}
+                </p>
+              </div>
+              <span className="mono-label text-warm-500">{sizeLabel(video.size)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="btn-sm text-warm-300"
+                onClick={() => inputRef.current?.click()}
+              >
+                Replace
+              </button>
+              <button
+                type="button"
+                aria-label="Remove video"
+                className="p-1.5 rounded-sm border border-warm-700 text-warm-400 hover:bg-coral/10 hover:border-coral/30 hover:text-coral-light transition-all"
+                onClick={() => {
+                  onVideoChange(null);
+                  setError(null);
+                }}
+              >
+                <CloseIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Upload progress */}
+          {uploading && (
+            <div className="mt-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="mono-label text-warm-400">UPLOADING</span>
+                <span className="mono-label text-accent">{uploadProgress}%</span>
+              </div>
+              <div className="h-1 w-full bg-warm-700">
+                <div
+                  className="h-full bg-accent transition-all duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </figure>
+
+      {error && (
+        <div className="mt-3 flex items-start gap-2.5 rounded-md border border-coral/30 bg-coral/[0.06] px-4 py-3 text-sm text-coral-light animate-fade-up">
+          <span className="mt-0.5">!</span>
+          <span className="leading-relaxed">{error}</span>
+        </div>
+      )}
 
       <input
         ref={inputRef}
@@ -234,13 +278,6 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
           e.target.value = "";
         }}
       />
-
-      {error && (
-        <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-coral/20 bg-coral/[0.06] px-4 py-3 text-sm text-coral animate-fade-up">
-          <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
     </div>
   );
 }
