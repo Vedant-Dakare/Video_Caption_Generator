@@ -16,18 +16,13 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")    # captioned videos
 for _dir in (VIDEO_DIR, AUDIO_DIR, CAPTION_DIR, OUTPUT_DIR):
     os.makedirs(_dir, exist_ok=True)
 
-DEFAULT_FFMPEG_PATH = (
-    r"D:\Downloads\ffmpeg-2026-08-27-git-a6f573a1db-essentials_build"
-    r"\ffmpeg-2026-08-27-git-a6f573a1db-essentials_build\bin\ffmpeg.exe"
-)
+DEFAULT_FFMPEG_PATH = "ffmpeg"
 
 
 def _resolve_ffmpeg():
     env_path = os.environ.get("FFMPEG_PATH")
     if env_path:
         return env_path
-    if os.path.exists(DEFAULT_FFMPEG_PATH):
-        return DEFAULT_FFMPEG_PATH
     found = shutil.which("ffmpeg")
     return found or DEFAULT_FFMPEG_PATH
 
