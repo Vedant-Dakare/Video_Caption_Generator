@@ -18,12 +18,14 @@ for _dir in (VIDEO_DIR, AUDIO_DIR, CAPTION_DIR, OUTPUT_DIR):
 
 DEFAULT_FFMPEG_PATH = "ffmpeg"
 
-
 def _resolve_ffmpeg():
     env_path = os.environ.get("FFMPEG_PATH")
+
     if env_path:
         return env_path
+
     found = shutil.which("ffmpeg")
+
     return found or DEFAULT_FFMPEG_PATH
 
 
