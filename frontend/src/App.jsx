@@ -31,10 +31,6 @@ export default function App() {
 
   const pollingRef = useRef(null);
   const queuedVideo = useRef(null);
-
-  // ------------------------------------------------------------------
-  // Backend health check
-  // ------------------------------------------------------------------
   const checkBackend = useCallback(async () => {
     try {
       const res = await fetch("/api/health");
@@ -58,9 +54,6 @@ export default function App() {
     checkBackend();
   }, [checkBackend]);
 
-  // ------------------------------------------------------------------
-  // Video lifecycle
-  // ------------------------------------------------------------------
   const handleVideoChange = useCallback((v) => {
     setVideo(v);
     if (!v) {
@@ -94,9 +87,6 @@ export default function App() {
     }
   }, []);
 
-  // ------------------------------------------------------------------
-  // Processing pipeline
-  // ------------------------------------------------------------------
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
@@ -155,9 +145,6 @@ export default function App() {
     }
   }, [video, selectedLangs, burnLang, spokenLang, stopPolling]);
 
-  // ------------------------------------------------------------------
-  // Language & burn handlers
-  // ------------------------------------------------------------------
   const handleSpokenChange = useCallback((v) => {
     setSpokenLang(v);
     setJob((j) => {
@@ -186,9 +173,6 @@ export default function App() {
     setBurnLang(code);
   }, []);
 
-  // ------------------------------------------------------------------
-  // Reset & preview
-  // ------------------------------------------------------------------
   const handleReset = useCallback(() => {
     stopPolling();
     setJob(null);

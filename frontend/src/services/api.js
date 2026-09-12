@@ -1,20 +1,27 @@
 import axios from "axios";
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || "/api"
+).replace(/\/$/, "");
+
 const api = axios.create({
-  baseURL: "/api",
-  timeout: 300000, // uploads can be slow; processing is async via polling
+  baseURL: API_URL,
+  timeout: 300000,
 });
 
 export function uploadVideo(file, onProgress) {
   const form = new FormData();
   form.append("video", file);
-  return api.post("/upload", form, {
-    onUploadProgress: (e) => {
-      if (onProgress && e.total) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    },
-  }).then((r) => r.data);
+
+  return api
+    .post("/upload", form, {
+      onUploadProgress: (e) => {
+        if (onProgress && e.total) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      },
+    })
+    .then((r) => r.data);
 }
 
 export function processVideo(payload) {
@@ -31,8 +38,21 @@ export async function getLanguages() {
   return r.data.languages;
 }
 
-// A captioned video / SRT URL. In dev these are proxied through Vite too.
 export function buildUrl(path) {
   if (!path) return null;
-  return path;
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (
+    API_URL.endsWith("/api") &&
+    normalizedPath.startsWith("/api/")
+  ) {
+    return `${API_URL.slice(0, -4)}${normalizedPath}`;
+  }
+
+  return `${API_URL}${normalizedPath}`;
 }
