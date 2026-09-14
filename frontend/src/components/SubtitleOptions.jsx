@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, CloseIcon, ChevronIcon } from "./icons.jsx";
+import { Check, CloseIcon, ChevronIcon, AlertIcon } from "./icons.jsx";
 
 const LANG_FLAGS = {
   en: "🇬🇧", hi: "🇮🇳", mr: "🇮🇳", es: "🇪🇸", fr: "🇫🇷", de: "🇩🇪",
@@ -37,116 +37,94 @@ export default function SubtitleOptions({
   const isLocked = selected.length === 1;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* ================= SUBTITLE LANGUAGES ================= */}
-      <section>
-        <div className="flex items-baseline justify-between mb-4">
-        <div className="flex items-baseline gap-3">
-          <span className="font-mono text-xs text-accent">STEP 02</span>
-          <span className="font-display text-base font-semibold text-warm-100">
-            Subtitle output
+      <section className="space-y-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+            Subtitle languages
+          </h3>
+          <span className="shrink-0 text-xs font-medium text-muted-soft">
+            {selected.length} selected
           </span>
         </div>
-          {selected.length > 0 && (
-            <span className="mono-label text-accent">
-              {selected.length} SELECTED
-            </span>
-          )}
-        </div>
 
-        <p className="mb-1.5 text-sm text-warm-300 leading-relaxed">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Select the languages you want subtitles for. Each generates a separate SRT file.
         </p>
-        <p className="mb-4 text-xs text-warm-400 leading-relaxed">
-          <span className="text-accent">English</span> is selected by default.{" "}
-          <span className="text-warm-400">Additional languages may increase processing time.</span>
-        </p>
 
-        {/* Search */}
-        <div className="relative mb-3">
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-soft" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search languages..."
             aria-label="Search languages"
-            className="w-full rounded-md border border-warm-700 bg-surface-2 px-3.5 py-2 text-sm text-warm-100 placeholder:text-warm-500 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
+            className="input-search"
           />
         </div>
 
-        {/* Language list - compact rows */}
-        <div
-          role="group"
-          aria-label="Subtitle languages"
-          className="border border-warm-700 rounded-md overflow-hidden"
-        >
+        <div className="relative overflow-hidden rounded-xl border border-border bg-background">
           {filtered.length === 0 ? (
-            <p className="px-4 py-6 text-center text-sm text-warm-500 mono-label">
+            <p className="mono-label px-4 py-8 text-center">
               NO MATCH FOR &ldquo;{query}&rdquo;
             </p>
           ) : (
-            filtered.map((l) => {
-              const active = selectedSet.has(l.code);
-              return (
-                <button
-                  key={l.code}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onToggle(l.code)}
-                  className={`
-                    flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left
-                    border-b border-warm-700/50 last:border-b-0
-                    transition-colors
-                    ${active
-                      ? "bg-accent/[0.07] hover:bg-accent/[0.1]"
-                      : "bg-transparent hover:bg-surface-2"}
-                    ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
-                  `}
-                  aria-pressed={active}
-                >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <span
-                      className={`
-                        font-mono text-xs w-7 transition-colors
-                        ${active ? "text-accent" : "text-warm-400"}
-                      `}
-                    >
-                      {l.code.toUpperCase()}
-                    </span>
-                    <span className={`text-sm ${active ? "text-warm-300" : "text-warm-500"}`}>
-                      {LANG_FLAGS[l.code] || "🌐"}
-                    </span>
-                    <span
-                      className={`text-sm transition-colors ${
-                        active ? "text-warm-100 font-semibold" : "text-warm-300 font-normal"
-                      }`}
-                    >
-                      {l.name}
-                    </span>
-                    {active && (
-                      <span className="mono-label text-accent ml-1">SELECTED</span>
-                    )}
-                  </span>
-                  <span
-                    className={`
-                      flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors
-                      ${active
-                        ? "border-accent bg-accent text-surface-0"
-                        : "border-warm-600 bg-transparent"}
-                    `}
-                  >
-                    {active && <Check className="h-2.5 w-2.5" />}
-                  </span>
-                </button>
-              );
-            })
+            <>
+              <ul
+                role="group"
+                aria-label="Subtitle languages"
+                className="lang-list max-h-80 divide-y divide-border/60 overflow-y-auto"
+              >
+                {filtered.map((l) => {
+                  const active = selectedSet.has(l.code);
+                  return (
+                    <li key={l.code}>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onToggle(l.code)}
+                        className={`
+                          flex min-h-[52px] w-full items-center gap-2.5 px-4 py-3 text-left transition-colors duration-150
+                          ${active
+                            ? "bg-accent/[0.07] shadow-[inset_3px_0_0_0_#D4A853] hover:bg-accent/[0.11]"
+                            : "hover:bg-muted/60"}
+                          ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}
+                        `}
+                        aria-pressed={active}
+                      >
+                        <span className={`w-9 shrink-0 font-mono text-xs font-semibold ${active ? "text-foreground" : "text-muted-soft"}`}>
+                          {l.code.toUpperCase()}
+                        </span>
+                        <span className="shrink-0 text-[15px]" aria-hidden="true">
+                          {LANG_FLAGS[l.code] || "🌐"}
+                        </span>
+                        <span className={`min-w-0 flex-1 truncate text-sm ${active ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                          {l.name}
+                        </span>
+                        {active && (
+                          <Check className="h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background to-transparent"
+              />
+            </>
           )}
         </div>
 
-        {/* Selected summary chips */}
         {selected.length > 0 && (
-          <div className="mt-3">
-            <div className="flex flex-wrap gap-1.5">
+          <div className="rounded-xl border border-border/60 bg-muted/40 p-2.5">
+            <div className="flex flex-wrap gap-2">
               {selected.map((code) => {
                 const l = languages.find((x) => x.code === code);
                 if (!l) return null;
@@ -154,27 +132,27 @@ export default function SubtitleOptions({
                 return (
                   <span
                     key={code}
-                    className="inline-flex items-center gap-1.5 rounded-sm border border-accent/30 bg-accent/[0.08] px-2 py-1 mono-label text-accent"
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-background py-1.5 pl-3 pr-1.5 text-[13px] font-medium text-foreground shadow-subtle"
                   >
-                    <Check className="h-2.5 w-2.5" />
-                    {code.toUpperCase()} · {l.name}
+                    <span className="font-mono text-[11px] font-semibold text-muted-foreground">{code.toUpperCase()}</span>
+                    <span>{l.name}</span>
                     <button
                       type="button"
                       disabled={disabled || isLast}
                       onClick={() => onToggle(code)}
                       aria-label={`Remove ${l.name}`}
                       title={isLast ? "At least one language is required" : `Remove ${l.name}`}
-                      className={`transition-colors ${isLast ? "opacity-30 cursor-not-allowed" : "text-accent/70 hover:text-accent"}`}
+                      className={`grid h-8 w-8 place-items-center rounded-md transition-colors ${isLast ? "cursor-not-allowed opacity-30" : "text-muted-soft hover:bg-muted hover:text-coral"}`}
                     >
-                      <CloseIcon className="h-3 w-3" />
+                      <CloseIcon className="h-3.5 w-3.5" />
                     </button>
                   </span>
                 );
               })}
             </div>
             {isLocked && (
-              <p className="mt-1.5 mono-label text-warm-500">
-                AT LEAST ONE SUBTITLE LANGUAGE IS REQUIRED
+              <p className="px-1 pt-2 text-xs text-muted-soft">
+                At least one subtitle language is required.
               </p>
             )}
           </div>
@@ -182,15 +160,12 @@ export default function SubtitleOptions({
       </section>
 
       {/* ================= BURN INTO VIDEO ================= */}
-      <section className="border-t border-warm-700/60 pt-8">
-        <div className="flex items-baseline gap-3 mb-4">
-          <span className="font-mono text-xs text-coral-light">STEP 03</span>
-          <span className="font-display text-base font-semibold text-warm-100">
-            Burn into video
-          </span>
-        </div>
+      <section className="space-y-4">
+        <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+          Burn into video
+        </h3>
 
-        <p className="mb-4 text-sm text-warm-400 leading-relaxed">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Choose one of your subtitle languages to render directly into the video frames.
           This creates a single output file with baked-in captions — independent of the
           subtitle files above.
@@ -201,46 +176,47 @@ export default function SubtitleOptions({
             type="button"
             disabled={disabled || burnOptions.length === 0}
             onClick={() => setBurnOpen(!burnOpen)}
-            className="w-full rounded-md border border-warm-700 bg-surface-2 px-3.5 py-2.5 text-left text-sm text-warm-100 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/20 flex items-center justify-between"
+            className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg border border-border bg-background px-3.5 py-2.5 text-left text-sm shadow-subtle transition-all duration-200 hover:-translate-y-px hover:border-foreground/25 hover:shadow-elevated focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             aria-expanded={burnOpen}
             aria-haspopup="listbox"
           >
-            <span className={burnLangObj ? "text-warm-100" : "text-warm-500"}>
+            <span className={burnLangObj ? "font-medium text-foreground" : "text-muted-soft"}>
               {burnLangObj
-                ? `${LANG_FLAGS[burnLangObj.code] || "🌐"} ${burnLangObj.name}`
+                ? `${LANG_FLAGS[burnLangObj.code] || "🌐"}  ${burnLangObj.name}`
                 : "Keep subtitles separate"}
             </span>
-            <ChevronIcon className={`h-4 w-4 text-warm-400 transition-transform ${burnOpen ? "rotate-180" : ""}`} />
+            <ChevronIcon className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${burnOpen ? "rotate-180" : ""}`} />
           </button>
 
           {burnOpen && (
             <ul
               role="listbox"
-              className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-md border border-warm-700 bg-surface-2 shadow-elevated"
+              aria-label="Burn-in language"
+              className="absolute z-20 mt-2 max-h-72 w-full animate-scale-in overflow-y-auto rounded-xl border border-border bg-background p-1.5 shadow-panel"
             >
-              <li>
+              <li role="option" aria-selected={!burn}>
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-sm text-warm-300 hover:bg-surface-3"
+                  className="flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-muted"
                   onClick={() => { onBurnChange(null); setBurnOpen(false); }}
                 >
                   Keep subtitles separate
-                  {!burn && <Check className="h-3.5 w-3.5 text-accent" />}
+                  {!burn && <Check className="h-4 w-4 text-mint" />}
                 </button>
               </li>
               {burnOptions.map((l) => (
-                <li key={l.code}>
+                <li key={l.code} role="option" aria-selected={burn === l.code}>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-sm text-warm-300 hover:bg-surface-3"
+                    className="flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted"
                     onClick={() => { onBurnChange(l.code); setBurnOpen(false); }}
                   >
                     <span className="flex items-center gap-2.5">
-                      <span className="font-mono text-xs text-warm-400 w-7">{l.code.toUpperCase()}</span>
-                      <span>{LANG_FLAGS[l.code] || "🌐"}</span>
-                      <span>{l.name}</span>
+                      <span className="w-8 font-mono text-xs font-semibold text-muted-soft">{l.code.toUpperCase()}</span>
+                      <span aria-hidden="true">{LANG_FLAGS[l.code] || "🌐"}</span>
+                      <span className="text-foreground">{l.name}</span>
                     </span>
-                    {burn === l.code && <Check className="h-3.5 w-3.5 text-accent" />}
+                    {burn === l.code && <Check className="h-4 w-4 text-mint" />}
                   </button>
                 </li>
               ))}
@@ -249,10 +225,10 @@ export default function SubtitleOptions({
         </div>
 
         {burnLangObj && (
-          <div className="mt-3 flex items-start gap-2.5 rounded-md border border-coral/30 bg-coral/[0.04] px-3.5 py-3">
-            <span className="mt-0.5 text-coral-light">!</span>
-            <p className="text-xs text-warm-300 leading-relaxed">
-              <span className="font-semibold text-coral-light">{burnLangObj.name}</span> subtitles
+          <div className="flex items-start gap-2.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3.5 py-3">
+            <AlertIcon className="mt-[2px] h-4 w-4 shrink-0 text-foreground" />
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground">{burnLangObj.name}</span> subtitles
               will be permanently rendered into the video. This produces a single output file.
             </p>
           </div>

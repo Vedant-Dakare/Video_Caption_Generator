@@ -3,10 +3,20 @@
 @tailwind utilities;
 
 /* ------------------------------------------------------------------ */
-/*  DESIGN TOKENS & BASE                                              */
+/*  LUMINA CAPTIONS — warm editorial theme over 1865 painting         */
+/*  Type scale: display 30-36 / section 20 / sub 16 / body 14 / mono 11 */
 /* ------------------------------------------------------------------ */
 
 @layer base {
+  :root {
+    --background: 42 33% 97%;        /* warm cream panel */
+    --foreground: 30 8% 10%;         /* near-black text */
+    --border: 32 12% 88%;
+    --muted: 34 16% 93%;
+    --muted-foreground: 30 6% 42%;
+    --muted-soft: 30 6% 58%;
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -14,139 +24,167 @@
   }
 
   body {
-    @apply bg-surface-0 text-warm-100;
+    @apply bg-background font-sans text-foreground;
     font-feature-settings: "cv11", "ss01", "cv01";
+    /* Full-bleed warm painting + dark gradient for legibility */
+    background-image:
+      linear-gradient(180deg, rgba(20, 18, 14, 0.52), rgba(20, 18, 14, 0.38) 42%, rgba(20, 18, 14, 0.58)),
+      url('/src/assets/hero-bg.jpg');
+    background-size: cover;
+    background-position: center 35%;
+    /* Note: background-attachment: fixed doesn't work on iOS Safari — gracefully degrades to scroll there */
+    background-attachment: fixed;
   }
 
   *:focus-visible {
-    @apply outline-1 outline-offset-2 outline-accent/60;
+    @apply outline-none ring-2 ring-accent/70 ring-offset-2 ring-offset-background;
   }
 
   ::selection {
-    background: rgba(212, 168, 83, 0.25);
-    color: #F0EDE8;
+    background: rgba(212, 168, 83, 0.35);
+    color: #16150F;
   }
 
-  /* Subtle film grain texture */
+  /* Subtle film grain to knit panels into the painting */
   #root::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.018;
+    opacity: 0.02;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 200px 200px;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(20,18,14,0.16); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(20,18,14,0.26); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(240, 237, 232, 0.08);
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(240, 237, 232, 0.15);
-  }
+  html { scroll-behavior: auto; }
 }
 
 /* ------------------------------------------------------------------ */
-/*  COMPONENT CLASSES                                                 */
+/*  COMPONENT CLASSES                                                  */
 /* ------------------------------------------------------------------ */
 
 @layer components {
-  /* Primary action button */
+  /* Primary — near-black. Gold stays secondary/highlight only. */
   .btn-primary {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-md
-      px-5 py-2.5 text-sm font-semibold text-surface-0
-      bg-accent hover:bg-accent-40
-      transition-all duration-200 ease-out-expo
-      disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:transform-none;
-  }
-  .btn-primary:not(:disabled):hover {
-    transform: translateY(-1px);
-  }
-  .btn-primary:not(:disabled):active {
-    transform: translateY(0);
+    @apply relative inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg
+      bg-foreground px-5 py-2.5 text-sm font-semibold text-background
+      shadow-elevated transition-all duration-200 ease-out-expo
+      hover:-translate-y-px hover:bg-[#2A2822] hover:shadow-panel
+      active:translate-y-0 active:shadow-elevated
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-elevated;
   }
 
-  /* Secondary / ghost button */
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-md
-      border border-warm-700 bg-transparent px-4 py-2.5
-      text-sm font-medium text-warm-200
-      transition-all duration-200
-      hover:bg-surface-3 hover:border-warm-600 hover:text-warm-100
-      disabled:opacity-30 disabled:cursor-not-allowed;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg
+      border border-border bg-background/60 px-4 py-2.5
+      text-sm font-medium text-foreground
+      transition-all duration-200 ease-out-expo
+      hover:-translate-y-px hover:border-foreground/25 hover:bg-muted hover:shadow-subtle
+      active:translate-y-0
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0;
   }
 
-  /* Small button */
   .btn-sm {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-md
-      px-3 py-1.5 text-xs font-medium text-warm-300
-      border border-warm-700 bg-transparent
+    @apply inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-md
+      border border-border bg-transparent px-3 py-1.5
+      text-xs font-medium text-muted-foreground
       transition-all duration-200
-      hover:bg-surface-3 hover:text-warm-100
-      disabled:opacity-30 disabled:cursor-not-allowed;
+      hover:-translate-y-px hover:border-foreground/20 hover:bg-muted hover:text-foreground hover:shadow-subtle
+      active:translate-y-0
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0;
   }
 
-  /* Danger button */
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-md
-      border border-coral/30 bg-coral/10 px-4 py-2.5
-      text-sm font-medium text-coral-light
-      transition-all duration-200
-      hover:bg-coral/20 hover:border-coral/40;
-  }
-
-  /* Input / Select */
   .input-select {
-    @apply w-full appearance-none rounded-md border border-warm-700
-      bg-surface-2 px-3.5 py-2.5 pr-10 text-sm text-warm-100
-      transition-all duration-200
-      focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/20
-      hover:border-warm-600;
+    @apply w-full min-h-[44px] appearance-none rounded-lg border border-border
+      bg-background px-3.5 py-2.5 pr-10 text-sm text-foreground
+      shadow-subtle transition-all duration-200
+      hover:border-foreground/25
+      focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/25
+      disabled:cursor-not-allowed disabled:opacity-50;
   }
-  .input-select option {
-    @apply bg-surface-2 text-warm-100;
+  .input-select option { @apply bg-background text-foreground; }
+
+  .input-search {
+    @apply w-full min-h-[44px] rounded-lg border border-border
+      bg-background px-3.5 py-2.5 pl-10 text-sm text-foreground
+      shadow-subtle transition-all duration-200
+      placeholder:text-muted-soft
+      hover:border-foreground/25
+      focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/25;
   }
 
-  /* Label */
   .label {
-    @apply block text-[11px] font-semibold uppercase tracking-[0.08em] text-warm-300;
+    @apply block text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
   }
 
-  /* Divider with optional label */
-  .divider {
-    @apply border-t border-warm-700;
-  }
+  .divider { @apply border-t border-border; }
 
-  /* Section panel — bordered, no rounding excess */
+  /* Floating cream panel that sits on the painting */
   .panel {
-    @apply border border-warm-700 bg-surface-1;
+    @apply rounded-xl border border-border bg-background shadow-panel;
+  }
+
+  /* Dark editorial promo side */
+  .panel-dark {
+    @apply bg-foreground text-background;
+  }
+
+  /* Task 4 — Option B: cropped slice of the painting inside the dark promo panel.
+     Strong dark overlay keeps text + mockup legible; position differs from the
+     page background (center 35%) so it reads as a slice, not a mirror. */
+  .promo-panel {
+    background-color: hsl(var(--foreground));
+    background-image:
+      linear-gradient(180deg, rgba(20, 18, 14, 0.84), rgba(20, 18, 14, 0.78)),
+      url('/src/assets/hero-bg.jpg');
+    background-size: cover;
+    background-position: 72% 18%;
+  }
+
+  /* Task 3 — language list: thin scrollbar + bottom fade hint */
+  .lang-list {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 18, 14, 0.22) transparent;
+  }
+  .lang-list::-webkit-scrollbar { width: 6px; }
+  .lang-list::-webkit-scrollbar-track { background: transparent; }
+  .lang-list::-webkit-scrollbar-thumb { background: rgba(20, 18, 14, 0.18); border-radius: 6px; }
+  .lang-list::-webkit-scrollbar-thumb:hover { background: rgba(20, 18, 14, 0.3); }
+
+  /* macOS-style window dots */
+  .mac-dots { @apply flex items-center gap-1.5; }
+  .mac-dots span { @apply h-2.5 w-2.5 rounded-full; }
+  .mac-dots span:nth-child(1) { @apply bg-coral/80; }
+  .mac-dots span:nth-child(2) { @apply bg-accent/80; }
+  .mac-dots span:nth-child(3) { @apply bg-mint/80; }
+
+  /* On-image pill (stepper / captions floating over painting) */
+  .on-image-pill {
+    @apply border border-white/15 bg-black/35 text-white shadow-elevated backdrop-blur-md;
   }
 }
 
-/* ------------------------------------------------------------------ */
-/*  UTILITY CLASSES                                                   */
-/* ------------------------------------------------------------------ */
-
 @layer utilities {
-  /* Staggered animation delays */
   .animate-delay-75 { animation-delay: 75ms; }
   .animate-delay-150 { animation-delay: 150ms; }
   .animate-delay-300 { animation-delay: 300ms; }
   .animate-delay-500 { animation-delay: 500ms; }
 
-  /* Compact mono text for technical info */
   .mono-label {
-    @apply font-mono text-[11px] font-medium tracking-wide text-warm-400;
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground;
   }
 }

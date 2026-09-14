@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
 import Home from "./pages/Home.jsx";
 import {
   uploadVideo,
@@ -192,7 +193,7 @@ export default function App() {
   useEffect(() => () => stopPolling(), [stopPolling]);
 
   return (
-    <div className="min-h-screen bg-surface-0">
+    <div className="min-h-screen">
       <Navbar status={backendStatus} />
       <Home
         phase={phase}
@@ -221,20 +222,7 @@ export default function App() {
           checkBackend();
         }}
       />
-      <footer className="relative border-t border-warm-700/50 bg-surface-0 py-8">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="font-display text-sm font-semibold text-warm-300">Lumina Captions</span>
-              <span className="text-warm-600">|</span>
-              <span className="text-xs text-warm-400">Powered by Whisper + FFmpeg</span>
-            </div>
-            <p className="text-[11px] text-warm-500 font-mono">
-              Runs locally. No data collection.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

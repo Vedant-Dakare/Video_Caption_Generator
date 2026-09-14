@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { UploadIcon, FileIcon, CloseIcon, PlayIcon } from "./icons.jsx";
+import { UploadIcon, FileIcon, CloseIcon, PlayIcon, AlertIcon } from "./icons.jsx";
 
 const ACCEPTED = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska", "video/webm"];
 const ACCEPTED_EXT = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"];
@@ -79,7 +79,7 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
   /* ======================= EMPTY / DROP ZONE ======================= */
   if (!video) {
     return (
-      <div>
+      <div className="space-y-3">
         <div
           role="button"
           tabIndex={0}
@@ -91,80 +91,76 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
           onDragLeave={onDragLeave}
           onDrop={onDrop}
           className={`
-            relative cursor-pointer overflow-hidden
-            border transition-all duration-300
+            group relative cursor-pointer overflow-hidden rounded-xl
+            border-2 border-dashed transition-all duration-300 ease-out-expo
             ${dragOver
-              ? "border-accent/50 bg-surface-1"
-              : "border-warm-700 border-dashed bg-surface-1 hover:border-warm-600 hover:bg-surface-2"
+              ? "scale-[1.01] border-accent bg-accent/[0.08] shadow-elevated"
+              : "border-border bg-muted/50 hover:-translate-y-0.5 hover:border-accent/50 hover:bg-background hover:shadow-elevated"
             }
           `}
         >
-          {/* Top: timecode-style header */}
-          <div className="flex items-center justify-between border-b border-warm-700/60 px-5 py-2.5">
-            <span className="mono-label text-warm-400">SOURCE // NEW PROJECT</span>
-            <span className="mono-label text-warm-500">00:00:00:00</span>
+          <div className="flex items-center justify-between border-b border-border/70 px-5 py-2.5">
+            <span className="mono-label">SOURCE // NEW PROJECT</span>
+            <span className="font-mono text-[11px] text-muted-soft">00:00:00:00</span>
           </div>
 
-          {/* Center body */}
-          <div className="px-8 py-14 text-center">
+          <div className="px-6 py-10 text-center sm:py-12">
             <div
-              className={`mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-md border transition-all duration-300 ${
+              className={`mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl border shadow-subtle transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-elevated ${
                 dragOver
-                  ? "border-accent/40 bg-accent/5 text-accent"
-                  : "border-warm-700 bg-surface-2 text-warm-400"
+                  ? "border-accent/40 bg-accent/10 text-foreground"
+                  : "border-border bg-background text-muted-foreground"
               }`}
             >
               <UploadIcon className="h-5 w-5" />
             </div>
 
-            <p className={`font-display text-lg font-semibold text-warm-100 mb-1.5 transition-colors ${dragOver ? "text-accent" : ""}`}>
+            <p className="mb-1.5 font-display text-lg font-semibold text-foreground">
               {dragOver ? "Release to drop" : "Drop a video here"}
             </p>
-            <p className="text-sm text-warm-400 mb-6">
+            <p className="mb-6 text-sm text-muted-foreground">
               or{" "}
-              <span className="text-accent underline underline-offset-4 decoration-accent/40 font-medium">
+              <span className="font-medium text-foreground underline decoration-accent decoration-2 underline-offset-4">
                 browse files
               </span>
             </p>
 
-            {/* Format strip */}
             <div className="flex flex-wrap items-center justify-center gap-1.5">
               {FORMAT_LABELS.map((f) => (
                 <span
                   key={f}
-                  className={`rounded-sm border px-2 py-1 font-mono text-[10px] font-semibold tracking-wide ${
+                  className={`rounded-md border px-2 py-1 font-mono text-[10px] font-semibold tracking-wide transition-colors ${
                     dragOver
-                      ? "border-accent/30 text-accent/80"
-                      : "border-warm-700 text-warm-400"
+                      ? "border-accent/40 bg-accent/10 text-foreground"
+                      : "border-border bg-background text-muted-foreground"
                   }`}
                 >
                   {f}
                 </span>
               ))}
             </div>
-            <p className="mono-label mt-4 text-warm-500">MAX 500 MB</p>
+            <p className="mono-label mt-3 !text-muted-soft">MAX 500 MB</p>
           </div>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".mp4,.mov,.avi,.mkv,.webm,.m4v,video/*"
+            className="hidden"
+            aria-hidden="true"
+            onChange={(e) => {
+              handleFile(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
         </div>
 
-        {/* error */}
         {error && (
-          <div className="mt-3 flex items-start gap-2.5 rounded-md border border-coral/30 bg-coral/[0.06] px-4 py-3 text-sm text-coral-light animate-fade-up">
-            <span className="mt-0.5">!</span>
-            <span className="leading-relaxed">{error}</span>
+          <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-coral/30 bg-coral/10 px-4 py-3 text-sm">
+            <AlertIcon className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
+            <span className="leading-relaxed text-foreground">{error}</span>
           </div>
         )}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".mp4,.mov,.avi,.mkv,.webm,.m4v,video/*"
-          className="hidden"
-          aria-hidden="true"
-          onChange={(e) => {
-            handleFile(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
       </div>
     );
   }
@@ -173,21 +169,18 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
   const ext = extOf(video.name);
 
   return (
-    <div className="animate-fade-up">
-      {/* Media frame */}
-      <figure className="relative border border-warm-700 bg-black overflow-hidden">
-        {/* Top timecode bar */}
-        <div className="flex items-center justify-between border-b border-warm-700/60 bg-surface-1 px-4 py-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <FileIcon className="h-3.5 w-3.5 text-warm-400 shrink-0" />
-            <span className="truncate font-mono text-xs text-warm-200">{video.name}</span>
+    <div className="animate-fade-up space-y-3">
+      <figure className="overflow-hidden rounded-xl border border-border bg-background shadow-subtle">
+        <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-muted/60 px-4 py-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="truncate font-mono text-xs text-foreground">{video.name}</span>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="mono-label text-warm-500">{ext || "MEDIA"}</span>
-          </div>
+          <span className="shrink-0 rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
+            {ext?.replace(".", "") || "MEDIA"}
+          </span>
         </div>
 
-        {/* Video player */}
         <div className="relative aspect-video bg-black">
           {video.url ? (
             <video
@@ -197,33 +190,29 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
               className="h-full w-full object-contain"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-warm-500">
+            <div className="flex h-full items-center justify-center text-white/70">
               <PlayIcon className="h-8 w-8" />
             </div>
           )}
-          {/* Frame markers overlay - subtle */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-3 items-end justify-between px-3 opacity-40" aria-hidden="true">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-3 items-end justify-between px-3 opacity-30" aria-hidden="true">
             {FRAME_TICKS.map((_, i) => (
-              <span key={i} className="w-px bg-warm-100/20" style={{ height: i % 4 === 0 ? "100%" : "55%" }} />
+              <span key={i} className="w-px bg-white/40" style={{ height: i % 4 === 0 ? "100%" : "55%" }} />
             ))}
           </div>
         </div>
 
-        {/* Bottom metadata strip */}
-        <div className="border-t border-warm-700/60 bg-surface-1 px-4 py-2.5">
+        <div className="border-t border-border/70 bg-muted/40 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-xs font-medium text-warm-200 truncate max-w-[180px] sm:max-w-none">
-                  {video.name}
-                </p>
-              </div>
-              <span className="mono-label text-warm-500">{sizeLabel(video.size)}</span>
+            <div className="flex min-w-0 items-center gap-3">
+              <p className="max-w-[180px] truncate text-xs font-medium text-muted-foreground sm:max-w-none">
+                {video.name}
+              </p>
+              <span className="shrink-0 font-mono text-[11px] text-muted-soft">{sizeLabel(video.size)}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="btn-sm text-warm-300"
+                className="btn-sm min-h-[40px] px-4"
                 onClick={() => inputRef.current?.click()}
               >
                 Replace
@@ -231,39 +220,39 @@ export default function VideoUploader({ video, onVideoChange, onUpload, uploadPr
               <button
                 type="button"
                 aria-label="Remove video"
-                className="p-1.5 rounded-sm border border-warm-700 text-warm-400 hover:bg-coral/10 hover:border-coral/30 hover:text-coral-light transition-all"
+                className="grid h-10 w-10 place-items-center rounded-md border border-border text-muted-foreground transition-all duration-200 hover:-translate-y-px hover:border-coral/40 hover:bg-coral/10 hover:text-coral"
                 onClick={() => {
                   onVideoChange(null);
                   setError(null);
                 }}
               >
-                <CloseIcon className="h-3.5 w-3.5" />
+                <CloseIcon className="h-4 w-4" />
               </button>
             </div>
           </div>
-
-          {/* Upload progress */}
-          {uploading && (
-            <div className="mt-2.5">
-              <div className="flex items-center justify-between mb-1">
-                <span className="mono-label text-warm-400">UPLOADING</span>
-                <span className="mono-label text-accent">{uploadProgress}%</span>
-              </div>
-              <div className="h-1 w-full bg-warm-700">
-                <div
-                  className="h-full bg-accent transition-all duration-200"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
+
+        {uploading && (
+          <div className="border-t border-border/70 px-4 py-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="mono-label">UPLOADING</span>
+              <span className="font-mono text-[11px] font-semibold text-foreground">{uploadProgress}%</span>
+            </div>
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-border" role="progressbar" aria-valuenow={uploadProgress} aria-valuemin={0} aria-valuemax={100}>
+              <div
+                className="h-full rounded-full bg-foreground transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+              <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent" aria-hidden="true" />
+            </div>
+          </div>
+        )}
       </figure>
 
       {error && (
-        <div className="mt-3 flex items-start gap-2.5 rounded-md border border-coral/30 bg-coral/[0.06] px-4 py-3 text-sm text-coral-light animate-fade-up">
-          <span className="mt-0.5">!</span>
-          <span className="leading-relaxed">{error}</span>
+        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-coral/30 bg-coral/10 px-4 py-3 text-sm">
+          <AlertIcon className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
+          <span className="leading-relaxed text-foreground">{error}</span>
         </div>
       )}
 
