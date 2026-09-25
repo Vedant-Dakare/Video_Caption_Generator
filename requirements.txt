@@ -1,9 +1,8 @@
-
 flask>=3.1
 flask-cors>=6.0
 
 openai-whisper
-moviepy
+moviepy==1.0.3
 srt
 gunicorn
 torch
